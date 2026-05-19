@@ -7,7 +7,7 @@ from datetime import datetime
 from TETRIS_TETROMINO_v5 import*
 
 class Menus(object):
-    def __init__(self, fenetre, lAttributsPolice, horloge, nbColonnes, nbLignes, visuel, nbFramesAffichage, lNbNoeuds, algorithme, entrainementGreedy, entrainementGenetique, entrainementNES, entrainementDRL, gameInfini, charger_reseau, evaluation):
+    def __init__(self, fenetre, lAttributsPolice, horloge, nbColonnes, nbLignes, visuel, audio, nbFramesAffichage, lNbNoeuds, algorithme, entrainementGreedy, entrainementGenetique, entrainementNES, entrainementDRL, gameInfini, charger_reseau, evaluation):
         self.horloge = horloge
         self.fenetre = fenetre
 
@@ -40,20 +40,22 @@ class Menus(object):
         self.aImFond = 40
         self.changer_fond()
 
-        self.cheminMusiques = "MENUS\\MUSIQUES"
-        self.lAlbums = [["musique_raphael_120.mpeg", "musique_raphael_180.mpeg", "musique_raphael_240.mpeg"], ["musique_joshua_90.mp3", "musique_joshua_120.mp3", "musique_joshua_180.mp3"]]
-        self.iAlbum = 0 #0R 1J 2L ?
-        self.musique = True
-        self.volumeMusique = 0.1
-        self.changer_musique()
-        self.lSonsClique = [pygame.mixer.Sound(f"{self.cheminMusiques}\\{nom}") for nom in ["clique_1.mp3", "clique_2.mp3", "clique_3.mp3", "clique_4.mp3", "clique_5.mp3"]]
-        self.iSonClique = 0
-        self.sonCroc = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_croc.mp3")
-        self.sonSwap = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_swap.mp3")
-        self.sonMouvement = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_mouvement.mp3")
-        self.sonCollision = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_collision.mp3")
-        self.lSons = self.lSonsClique + [self.sonCroc, self.sonSwap, self.sonMouvement, self.sonCollision]
-        self.son = True
+        self.audio = audio
+        if self.audio :
+            self.cheminMusiques = "MENUS\\MUSIQUES"
+            self.lAlbums = [["musique_raphael_120.mpeg", "musique_raphael_180.mpeg", "musique_raphael_240.mpeg"], ["musique_joshua_90.mp3", "musique_joshua_120.mp3", "musique_joshua_180.mp3"]]
+            self.iAlbum = 0 #0R 1J 2L ?
+            self.musique = True
+            self.volumeMusique = 0.1
+            self.changer_musique()
+            self.lSonsClique = [pygame.mixer.Sound(f"{self.cheminMusiques}\\{nom}") for nom in ["clique_1.mp3", "clique_2.mp3", "clique_3.mp3", "clique_4.mp3", "clique_5.mp3"]]
+            self.iSonClique = 0
+            self.sonCroc = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_croc.mp3")
+            self.sonSwap = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_swap.mp3")
+            self.sonMouvement = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_mouvement.mp3")
+            self.sonCollision = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_collision.mp3")
+            self.lSons = self.lSonsClique + [self.sonCroc, self.sonSwap, self.sonMouvement, self.sonCollision]
+            self.son = True
 
     def boucle(self):
         self.actif = True
@@ -95,7 +97,10 @@ class Menus(object):
         image = pygame.image.load(chemin).convert_alpha() if transparence else pygame.image.load(chemin).convert()
         image, dimensions = self.modifier_dimensions(image, w, h)
         if enregistrement:
-            pygame.image.save(image, f"{dossier1}\\{dossier3}\\{nom}")
+            try :
+                pygame.image.save(image, f"{dossier1}\\{dossier3}\\{nom}")
+            except :
+                print(f"Erreur lors de l'enregistrement de {nom} dans {dossier1}\\{dossier3}")
         return image, dimensions
 
     def extraire_tous_boutons(self, dossier1, dossier2, dossier3, nom, lNomsBoutons):
@@ -132,8 +137,10 @@ class Menus(object):
         #alpha = pygame.surfarray.pixels_alpha(image2)
         rgb[:] = np.clip(rgb * facteur, 0, 255)
         return image2
-    
+
     def changer_musique(self):
+        if not self.audio:
+            return
         pygame.mixer.music.load(f"{self.cheminMusiques}\\{self.lAlbums[self.iAlbum][self.menuHome.iNiveau]}")
         pygame.mixer.music.set_volume(self.volumeMusique)
         if self.musique :
@@ -293,14 +300,15 @@ class Menu_Parametres(object):
         self.imFond.afficher(self.menus.fenetre)
         for element in self.lElements:
             element.afficher(self.menus.fenetre)
-        if self.menus.musique :
-            self.boutonMusiqueOn.afficher(self.menus.fenetre)
-        else:
-            self.boutonMusiqueOff.afficher(self.menus.fenetre)
-        if self.menus.son:
-            self.boutonSonOn.afficher(self.menus.fenetre)
-        else :
-            self.boutonSonOff.afficher(self.menus.fenetre)
+        if self.menus.audio:
+            if self.menus.musique :
+                self.boutonMusiqueOn.afficher(self.menus.fenetre)
+            else:
+                self.boutonMusiqueOff.afficher(self.menus.fenetre)
+            if self.menus.son:
+                self.boutonSonOn.afficher(self.menus.fenetre)
+            else :
+                self.boutonSonOff.afficher(self.menus.fenetre)
 
     def gerer_souris(self, lEvents):
         if self.boutonHome.gerer_souris():
@@ -313,40 +321,41 @@ class Menu_Parametres(object):
         if self.boutonFond.gerer_souris():
             self.menus.iFond = (self.menus.iFond+1)%len(self.menus.lFonds)
             self.menus.changer_fond()
-        if self.boutonMusique.gerer_souris():
+        if self.boutonMusique.gerer_souris() and self.menus.audio:
             self.menus.iAlbum = (self.menus.iAlbum+1)%len(self.menus.lAlbums)
             self.menus.changer_musique()
-        if self.boutonSon.gerer_souris():
+        if self.boutonSon.gerer_souris() and self.menus.audio:
             self.menus.iSonClique = (self.menus.iSonClique+1)%len(self.menus.lSonsClique)
 
-        if self.menus.musique :
-            if self.boutonMusiqueOn.gerer_souris():
-                self.menus.musique = False
-                self.menus.changer_musique()
-        else:
-            if self.boutonMusiqueOff.gerer_souris():
-                self.menus.musique = True
-                self.menus.changer_musique()
-        if self.menus.son:
-            if self.boutonSonOn.gerer_souris():
-                self.menus.son = False
-        else :
-            if self.boutonSonOff.gerer_souris():
-                self.menus.son = True
-        
+        if self.menus.audio :
+            if self.menus.musique :
+                if self.boutonMusiqueOn.gerer_souris():
+                    self.menus.musique = False
+                    self.menus.changer_musique()
+            else:
+                if self.boutonMusiqueOff.gerer_souris() and self.menus.audio:
+                    self.menus.musique = True
+                    self.menus.changer_musique()
+            if self.menus.son:
+                if self.boutonSonOn.gerer_souris() and self.menus.audio:
+                    self.menus.son = False
+            else :
+                if self.boutonSonOff.gerer_souris() and self.menus.audio:
+                    self.menus.son = True
+
         for slider in self.lSliders:
             changement = slider.gerer_souris()
             if changement:
-                if slider == self.sliderMusique:
+                if slider == self.sliderMusique and self.menus.audio:
                     self.menus.volumeMusique = self.sliderMusique.valeur/100
                     pygame.mixer.music.set_volume(self.menus.volumeMusique)
-                elif slider == self.sliderSon :
+                elif slider == self.sliderSon and self.menus.audio:
                     self.menus.lSons[self.menus.iSonClique].set_volume(self.sliderSon.valeur/100)
                 elif slider == self.sliderLuminosite:
                     self.menus.aImFond = int(255 * self.sliderLuminosite.valeur/100)
                     self.menus.changer_transparence_fond()
 
-        
+
 
 
 
@@ -817,7 +826,7 @@ class Menu_Jeu(object):
     def afficher(self):
         if not self.visuel:
             return
-        
+
         self.imFond.afficher(self.menus.fenetre)
         for element in self.lElements:
             element.afficher(self.menus.fenetre)
@@ -954,24 +963,25 @@ class Menu_Jeu(object):
         if event.key == pygame.K_SPACE:
             self.piece.deltaTemps = 0
             self.piece.deltaTempsInit = 0
-            self.menus.sonCollision.play()
+            if self.menus.audio:
+                self.menus.sonCollision.play()
         if event.key == pygame.K_UP:
             self.piece.tourner(self.grille, changement=1)
             if self.tester_chevauchement(self.grille, self.piece.x, self.piece.y, self.piece.orientation, self.piece.type):
                 self.piece.tourner(self.grille, changement=-1)
-            else :
+            elif self.menus.audio :
                 self.menus.sonSwap.play()
         elif event.key == pygame.K_LEFT:
             self.piece.deplacer(self.grille, dx=-1)
             if self.tester_chevauchement(self.grille, self.piece.x, self.piece.y, self.piece.orientation, self.piece.type):
                 self.piece.deplacer(self.grille, dx=1)
-            else :
+            elif self.menus.audio :
                 self.menus.sonMouvement.play()
         elif event.key == pygame.K_RIGHT:
             self.piece.deplacer(self.grille, dx=1)
             if self.tester_chevauchement(self.grille, self.piece.x, self.piece.y, self.piece.orientation, self.piece.type):
                 self.piece.deplacer(self.grille, dx=-1)
-            else :
+            elif self.menus.audio :
                 self.menus.sonMouvement.play()
         elif event.key == pygame.K_h:
             self.mettre_piece_hold()
@@ -1009,7 +1019,8 @@ class Menu_Jeu(object):
         if reel :
             self.changer_score(gain=self.dicoScores[nbLignesASupprimer])
             self.calculer_sommeNbBlocs(ajout=-nbColonnes*nbLignesASupprimer)
-            self.menus.sonCroc.play()
+            if self.menus.audio:
+                self.menus.sonCroc.play()
         elif fScore is not None:
             fScore(gain=self.dicoScores[nbLignesASupprimer])
         return grille2
@@ -1338,7 +1349,7 @@ class Bouton(object):
         self.hover = (self.image.position[0] <= xS <= self.image.position[0]+self.image.dimensions[0]) and (self.image.position[1] <= yS <= self.image.position[1]+self.image.dimensions[1])
         clicked = self.hover and self.pressed and not appuie
         self.pressed = self.hover and appuie
-        if clicked and self.menus.son :
+        if clicked and self.menus.audio and self.menus.son :
             self.menus.lSonsClique[self.menus.iSonClique].play()
         return clicked
 
