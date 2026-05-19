@@ -3,7 +3,7 @@ from math import floor, ceil, sqrt
 from datetime import datetime
 from copy import deepcopy
 import torch
-from TETRIS_TETROMINO_v4 import*
+from TETRIS_TETROMINO_v5 import*
 from TETRIS_INDIVIDU_NN_v1 import*
 
 class Algorithme_Genetique(object):

@@ -485,12 +485,15 @@ class Algorithme(object):
         self.jeu.visuel = visuel
         modeleAvant = self.modele
         self.modele = modele
+        sonAvant = self.jeu.menus.son
+        self.jeu.menus.son = False
         if nbParties < 1:
             return
         if affichage:
             print('\n\n')
         for iP in range(1, nbParties+1):
             if self.jeu.quitterProgramme :
+                print("quitter programme")
                 continue
             if affichage:
                 print("\033[F\033[F", end="")
@@ -498,12 +501,19 @@ class Algorithme(object):
                 print(' '*80 + '\r' + f"Evaluation Algorithme : Partie {iP} ({(iP)/nbParties*100:.2f}%)", flush=True)
             if fonctionAvancement is not None:
                 fonctionAvancement(100*iP/nbParties)
-            self.jeu.jouer(modeAlgo=True)
+
+            self.jeu.modeGrille = self.jeu.menus.menuHome.iNiveau
+            self.jeu.changer_grille(delta=0)
+            self.jeu.reset(modeAlgo=True)
+            while not self.jeu.finJeu and not self.jeu.quitterProgramme:
+                self.appliquer_position()
+
             scoreAvant, nbCoupsAvant = self.jeu.score, self.jeu.nbCoups
             sommeScores += scoreAvant
             sommeNbCoups += nbCoupsAvant
         self.jeu.visuel = visuelAvant
         self.modele = modeleAvant
+        self.jeu.menus.son = sonAvant
         scoreMoyen = sommeScores/nbParties
         nbCoupsMoyen = sommeNbCoups/nbParties
         t = datetime.now()

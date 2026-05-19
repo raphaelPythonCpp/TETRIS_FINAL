@@ -1,5 +1,5 @@
 import torch
-from TETRIS_TETROMINO_v4 import*
+from TETRIS_TETROMINO_v5 import*
 
 class Individu_NN(torch.nn.Module):
     def __init__(self, jeu, algoEntrainement, algo, lNbNoeuds, dicoReseau, nbLignes, nbColonnes, iIndividu=None):
