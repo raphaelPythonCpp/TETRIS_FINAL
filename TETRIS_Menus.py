@@ -33,7 +33,8 @@ class Menus(object):
         self.menuParametres = Menu_Parametres(self)
         self.menuCreation = Menu_Creation_Pieces(self, self.menuJeu.tailleMaxPieces)
         self.menuInfo = Menu_Info(self)
-        self.lMenus = [self.menuJeu, self.menuHome, self.menuDidactique, self.menuGameOver, self.menuParametres, self.menuCreation, self.menuInfo]
+        self.menuEstimation = Menu_Estimation(self)
+        self.lMenus = [self.menuJeu, self.menuHome, self.menuDidactique, self.menuGameOver, self.menuParametres, self.menuCreation, self.menuInfo, self.menuEstimation]
 
         self.lFonds = ["background_1.jpg", "background_2.jpeg", "background_3.jpg"]
         self.iFond = 0
@@ -175,6 +176,7 @@ class Menu_home(object):
         self.boutonMenuParametres = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "options.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][0], True, False)
         self.boutonMenuCreation = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "inventaire.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][1], True, False)
         self.boutonMenuInfo = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "info.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][3], True, False)
+        self.boutonMenuEstimation = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "amis.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][4], True, False)
 
         wBoutonsNiveau = 150
         xInitBoutonsNiveau = self.menus.wF/2 - 3/2*1.1*wBoutonsNiveau
@@ -201,7 +203,7 @@ class Menu_home(object):
         self.boutonJouer.image.position = (self.menus.wF/2 - self.boutonJouer.image.dimensions[0]/2, self.menus.hF/2+30-self.boutonJouer.image.dimensions[1])
 
         self.lImages = [self.imGrilleEasy, self.imGrilleMedium, self.imGrilleHard, self.texteHome]
-        self.lBoutons = [self.boutonMenuDidactique, self.boutonEasy, self.boutonMedium, self.boutonHard, self.boutonJouer, self.boutonMenuParametres, self.boutonMenuCreation, self.boutonMenuInfo]
+        self.lBoutons = [self.boutonMenuDidactique, self.boutonEasy, self.boutonMedium, self.boutonHard, self.boutonJouer, self.boutonMenuParametres, self.boutonMenuCreation, self.boutonMenuInfo, self.boutonMenuEstimation]
         self.lElements = self.lImages + self.lBoutons
 
     def afficher(self):
@@ -237,6 +239,9 @@ class Menu_home(object):
         if self.boutonMenuInfo.gerer_souris():
             self.actif = False
             self.menus.menuInfo.actif = True
+        if self.boutonMenuEstimation.gerer_souris():
+            self.actif = False
+            self.menus.menuEstimation.actif = True
 
         if self.boutonEasy.gerer_souris():
             self.iNiveau = 0
@@ -279,9 +284,9 @@ class Menu_Parametres(object):
         self.boutonMusique = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "changer_musique.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][3], True, False)
         self.boutonSon = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "changer_son.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][4], True, False)
 
-        self.sliderMusique = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Musique", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.15*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.35, 0.4, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
-        self.sliderSon = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Son Clic", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.45*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.35, 0.4, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
-        self.sliderLuminosite = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Luminosite fond", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_orange.png", nomForme="forme_orange.png", rectangleFond=(0.025*self.menus.wF, 0.75*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.35, 0.4, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(128,128,128,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderMusique = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Musique", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.15*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderSon = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Son Clic", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.45*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderLuminosite = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Luminosite fond", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_orange.png", nomForme="forme_orange.png", rectangleFond=(0.025*self.menus.wF, 0.75*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(128,128,128,180), couleurTexte=(0,0,0,180), interactif=True)
 
 
         self.lImages = [self.texteParametres]
@@ -467,7 +472,7 @@ class Menu_Info(object):
         self.actif = False
 
         self.imFond = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\IMAGES", self.menus.dossierOutput, "background_1.jpg", None, self.menus.fenetre.get_height(), (0, 0), False, True)
-        self.texteInfo = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "texte_perdu.png", None, 0.08*self.menus.hF, None, True, False)
+        self.texteInfo = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "texte_info.png", None, 0.08*self.menus.hF, None, True, False)
         self.texteInfo.position = ((self.menus.wF-self.texteInfo.dimensions[0])/2, 0.01*self.menus.hF)
         self.boutonHome = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "accueil.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][0], True, False)
         self.boutonEcriture = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "ecriture.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][1], True, False)
@@ -498,6 +503,103 @@ class Menu_Info(object):
         self.positionTexte1 = (self.menus.wF/2-self.texte1.get_width()/2, 0.3*self.menus.hF)
         self.texte2 = self.menus.generateurTexte.creer_surface_texte(f"Il est egalement possible de visionner le diaporama de presentation presentation.odp", 0.9*self.menus.wF, 0.3*self.menus.hF, 0.05, (255,255,255))
         self.positionTexte2 = (self.menus.wF/2-self.texte2.get_width()/2, self.positionTexte1[1]+self.texte1.get_height()+0.1*self.menus.hF)
+
+
+
+
+
+class Menu_Estimation(object):
+    def __init__(self, menus):
+        self.menus = menus
+
+        self.actif = False
+
+        self.imFond = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\IMAGES", self.menus.dossierOutput, "background_1.jpg", None, self.menus.fenetre.get_height(), (0, 0), False, True)
+        self.boutonEstimation = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "texte_estimation.png", None, 0.08*self.menus.hF, None, True, False)
+        self.boutonEstimation.image.position = ((self.menus.wF-self.boutonEstimation.image.dimensions[0])/2, 0.01*self.menus.hF)
+        self.boutonJusteTemps = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "texte_juste_temps.png", None, 0.08*self.menus.hF, None, True, False)
+        self.boutonJusteTemps.image.position = ((self.menus.wF-self.boutonJusteTemps.image.dimensions[0])/2, 0.01*self.menus.hF)
+        self.boutonParticipation = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "texte_participation.png", None, 0.08*self.menus.hF, None, True, False)
+        self.boutonParticipation.image.position = ((self.menus.wF-self.boutonParticipation.image.dimensions[0])/2, 0.01*self.menus.hF)
+        self.lBoutonsTitre = [self.boutonEstimation, self.boutonJusteTemps, self.boutonParticipation]
+        self.iBoutonsTitre = 0
+        self.boutonHome = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "accueil.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][0], True, False)
+        self.boutonEcriture = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "ecriture.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][1], True, False)
+        self.boutonValider = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "confirmer_2.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][0], True, False)
+        self.boutonReset = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "changer.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][1], True, False)
+
+        self.trouve = False
+        self.sliderR = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Pourcentage de Participation de R", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.15*self.menus.hF, 0.95*self.menus.wF, 0.15*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(0,255,0,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderJ = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Pourcentage de Participation de J", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_bleu.png", nomForme="forme_bleue.png", rectangleFond=(0.025*self.menus.wF, 0.35*self.menus.hF, 0.95*self.menus.wF, 0.15*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(0,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderL = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Pourcentage de Participation de L", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_violet.png", nomForme="forme_violette.png", rectangleFond=(0.025*self.menus.wF, 0.55*self.menus.hF, 0.95*self.menus.wF, 0.15*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderAccuracy = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Pourcentage Accuracy", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_rouge.png", nomForme="forme_rouge.png", rectangleFond=(0.025*self.menus.wF, 0.75*self.menus.hF, 0.95*self.menus.wF, 0.15*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(255,0,0,180), couleurTexte=(0,0,0,180), interactif=False)
+
+        self.lValeursATrouver = [0.85, 0.15, 0]
+
+        self.lImages = []
+        self.lBoutons = [self.boutonHome, self.boutonEcriture, self.boutonValider, self.boutonReset]
+        self.lSliders = [self.sliderR, self.sliderJ, self.sliderL, self.sliderAccuracy]
+        self.lElements = self.lImages + self.lBoutons
+
+        self.calculer_accuracy()
+        self.changer_mode_texte()
+
+    def afficher(self):
+        self.imFond.afficher(self.menus.fenetre)
+        self.lBoutonsTitre[self.iBoutonsTitre].afficher(self.menus.fenetre)
+        for element in self.lElements:
+            element.afficher(self.menus.fenetre)
+        if self.trouve:
+            for texte, positionTexte in zip(self.lTextes, self.lPositionTextes):
+                self.menus.fenetre.blit(texte, positionTexte)
+        else :
+            for slider in self.lSliders:
+                slider.afficher(self.menus.fenetre)
+
+    def gerer_souris(self, lEvents):
+        if self.boutonHome.gerer_souris():
+            self.actif = False
+            self.menus.menuHome.actif = True
+        if self.lBoutonsTitre[self.iBoutonsTitre].gerer_souris():
+            self.iBoutonsTitre = (self.iBoutonsTitre+1)%len(self.lBoutonsTitre)
+        if self.boutonEcriture.gerer_souris():
+            self.menus.modeTexte = "POLICE" if self.menus.modeTexte == "IMAGES" else "IMAGES"
+            self.changer_mode_texte()
+        if self.boutonValider.gerer_souris() and self.accuracy == 1:
+            self.trouve = not self.trouve
+            if not self.trouve:
+                for slider in self.lSliders :
+                    slider.iValeur = 0
+                    slider.maj_valeur()
+        if self.boutonReset.gerer_souris() and not self.trouve:
+            for slider in self.lSliders :
+                slider.iValeur = 0
+                slider.maj_valeur()
+        
+        changement = False
+        for slider in self.lSliders:
+            changement |= slider.gerer_souris()
+        if changement :
+            self.calculer_accuracy()
+
+    def changer_mode_texte(self):
+        lNoms = [f"Au depart, la repartition etait plutot equitable", f"Au milieu de projet, seul R travaillait", f"A la fin du projet, seuls R et J travaillaient", f"L n a meme pas daigne faire sa partie de musique, alors qu il pouvait", f"Donc seul lui doit etre penalise"]
+        yDebut = 0.2
+        hTextes = (1-yDebut)*self.menus.hF / len(lNoms)
+        self.lTextes, self.lPositionTextes = [], []
+        for i,nom in enumerate(lNoms):
+            self.lTextes.append(self.menus.generateurTexte.creer_surface_texte(nom, 0.9*self.menus.wF, hTextes, 0.05, (255,255,255)))
+            self.lPositionTextes.append((self.menus.wF/2-self.lTextes[-1].get_width()/2, yDebut*self.menus.hF + hTextes*i))
+        self.lTextes.append(self.menus.generateurTexte.creer_surface_texte("btw ceci peut s apparenter a une descente de gradient, ou GD, donc c est aussi didactique", 0.9*self.menus.wF, 0.05*self.menus.hF, 0.05, (255,255,255)))
+        self.lPositionTextes.append((self.menus.wF/2-self.lTextes[-1].get_width()/2, self.menus.hF-self.lTextes[-1].get_height()))
+        for slider in self.lSliders:
+            slider.changer_mode_texte()
+
+    def calculer_accuracy(self):
+        self.accuracy = 1 - sum(abs(slider.valeur/100 - valeurATrouver) for slider,valeurATrouver in zip(self.lSliders[:3], self.lValeursATrouver)) / len(self.lValeursATrouver)
+        self.sliderAccuracy.iValeur = int((self.sliderAccuracy.nbValeurs-1) * self.accuracy)
+        self.sliderAccuracy.maj_valeur()
+
 
 
 
@@ -563,7 +665,7 @@ class Menu_didactique(object):
         aFondSliders = 180
         cMinFondSliders, cMaxFondSliders = 70, 200
         self.couleurTexte = (255, 255, 255)#(cMaxFondSliders/2, cMaxFondSliders/2, cMaxFondSliders/2)
-        wTexteSliders, hTexteSliders, espacementTexteSliders = 0.35, 0.4, 0.05
+        wTexteSliders, hTexteSliders, espacementTexteSliders = 0.45, 0.6, 0.05
         lCouleursSliders = [("rouge", "rouge", (cMaxFondSliders,0,0,aFondSliders), (cMinFondSliders,0,0)), ("vert", "verte", (0,cMaxFondSliders,0,aFondSliders), (0,cMinFondSliders,0)), ("bleu", "bleue", (0,0,cMaxFondSliders,aFondSliders), (0,0,cMinFondSliders)), ("jaune", "jaune", (cMaxFondSliders,cMaxFondSliders,0,aFondSliders), (cMinFondSliders,cMinFondSliders,0)), ("violet", "violette", (cMaxFondSliders,0,cMaxFondSliders,aFondSliders), (cMinFondSliders,0,cMinFondSliders)), ("orange", "orange", (cMaxFondSliders,(cMinFondSliders*0.7+0.3*cMaxFondSliders),0,aFondSliders), (cMinFondSliders,cMinFondSliders//2,0)), ("cyan", "cyan", (0,cMaxFondSliders,cMaxFondSliders,aFondSliders), (0,cMinFondSliders,cMinFondSliders))]
         lCarSliders = [(nom, "cadre_barre_11.png", "carre_noir.png", f"carre_{couleur1}.png", f"forme_{couleur2}.png", rgbaFond, rgbTexte) for nom, (couleur1, couleur2, rgbaFond, rgbTexte) in zip(lNomsConstantes, lCouleursSliders)]
         yMinSliders = 0.1*self.menus.hF#self.boutonPrediction.image.dimensions[1]*1.15
@@ -1142,7 +1244,7 @@ class Slider(object):
         self.borderRadiusFond = round(min(self.fond.get_size())*0.3)
 
         self.wCarres = round(0.4*self.wFond / (nbValeurs-1))
-        self.imCadre = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCadre, w=round(self.wCarres*(nbValeurs-1)), h=None, position=(0.15*self.wFond + caracteristiquesTexte[0]*self.wFond, 0.55*self.hFond), transparence=False, enregistrement=enregistrement)
+        self.imCadre = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCadre, w=round(self.wCarres*(nbValeurs-1)), h=None, position=(0.53*self.wFond, 0.45*self.hFond), transparence=False, enregistrement=enregistrement)
         self.imCarreNoir = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCarreNoir, self.wCarres, None, None, False, enregistrement)
         self.imCarreColore = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCarreColore, self.wCarres, None, None, False, enregistrement)
         hForme = round(0.7*self.wCarres)
@@ -1236,22 +1338,22 @@ class Slider(object):
     def maj_valeur(self):
         self.valeur = self.lValeurs[self.iValeur]
         self.texteValeur = self.menus.generateurTexte.creer_surface_texte(str(self.valeur), 0.2*self.wFond, 0.3*self.hFond, 0.1, self.couleurTexte)
-        self.positionTexteV = (self.imCadre.position[0]+(self.imCadre.dimensions[0]-self.texteValeur.get_width())/2, self.imCadre.position[1]-self.texteValeur.get_height()-0.05*self.hFond)
+        self.positionTexteV = (self.imCadre.position[0]+(self.imCadre.dimensions[0]-self.texteValeur.get_width())/2, self.lPositionsCarres[0][1]-self.texteValeur.get_height())
 
     def maj_valeur_min(self):
         self.texteValeurMin = self.menus.generateurTexte.creer_surface_texte(str(self.valeurMin), 0.2*self.wFond, 0.3*self.hFond, 0.05, self.couleurTexte)
         self.positionTexteVMin = (self.imCadre.position[0]-(self.texteValeurMin.get_width()+self.imCarreNoir.image.get_width()/2), self.imCadre.position[1]+(self.imCadre.dimensions[1]-self.texteValeurMin.get_height())/2)
 
     def maj_valeur_max(self):
-        self.texteValeurMax = self.menus.generateurTexte.creer_surface_texte(str(self.valeurMax), 0.2*self.wFond, 0.3*self.hFond, 0.05, self.couleurTexte)
-        self.positionTexteVMax = (self.imCadre.position[0]+self.imCadre.dimensions[0]+self.imCarreNoir.image.get_width()/2, self.imCadre.position[1]+(self.imCadre.dimensions[1]-self.texteValeurMax.get_height())/2)
+        self.texteValeurMax = self.menus.generateurTexte.creer_surface_texte(str(self.valeurMax), 0.06*self.wFond, 0.3*self.hFond, 0.05, self.couleurTexte)
+        self.positionTexteVMax = (self.lPositionsCarres[-1][0]+1.2*self.wCarres, self.imCadre.position[1]+(self.imCadre.dimensions[1]-self.texteValeurMax.get_height())/2)
 
     def maj_nom(self):
         wT, hT, eT = self.caracteristiquesTexte
         wTexte = wT*self.wFond
         hTexte = hT*self.hFond
         self.texteNom = self.menus.generateurTexte.creer_surface_texte(self.nom, wTexte, hTexte, eT, self.couleurTexte)
-        self.positionTexteNom = (0.03*self.wFond + (wTexte-self.texteNom.get_width())/2, self.imCadre.position[1])#(self.hFond-self.texteNom.get_height())/2)
+        self.positionTexteNom = ((wTexte-self.texteNom.get_width())/2, self.imCadre.position[1])#(self.hFond-self.texteNom.get_height())/2)
 
 
 
