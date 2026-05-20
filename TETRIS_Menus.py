@@ -26,7 +26,7 @@ class Menus(object):
         self.wBoutons = 50
         self.lPositionsBoutons = [[(5+i*1.1*self.wBoutons, 5) for i in range(10)], [(self.wF-(self.wBoutons+5+i*1.1*self.wBoutons), 5) for i in range(10)]]
 
-        self.menuJeu = Menu_Jeu(menus=self, lAttributsPolice=lAttributsPolice, horloge=self.horloge, nbColonnes=nbColonnes, nbLignes=nbLignes, visuel=visuel, nbFramesAffichage=nbFramesAffichage, lNbNoeuds=lNbNoeuds, algorithme=algorithme, entrainementGreedy=entrainementGreedy, entrainementGenetique=entrainementGenetique, entrainementNES=entrainementNES, entrainementDRL=entrainementDRL, gameInfini=gameInfini)
+        self.menuJeu = Menu_Jeu(menus=self, lAttributsPolice=lAttributsPolice, horloge=self.horloge, nbColonnes=nbColonnes, nbLignes=nbLignes, visuel=visuel, nbFramesAffichage=nbFramesAffichage, lNbNoeuds=lNbNoeuds, algorithme=algorithme, entrainementGreedy=entrainementGreedy, entrainementGenetique=entrainementGenetique, entrainementNES=entrainementNES, entrainementDRL=entrainementDRL, gameInfini=gameInfini, charger_reseau=charger_reseau, evaluation=evaluation)
         self.menuDidactique = Menu_didactique(self, ["hauteur max grille", "hauteur max piece", "somme hauteurs", "nb trous normaux", "score irregularites", "nb lignes", "score puits"], 50, avecTorch=self.menuJeu.algorithme) #ATTENTION : pas le bon nom de fichier
         self.menuHome = Menu_home(self)
         self.menuGameOver = Menu_Game_Over(self)
@@ -501,7 +501,7 @@ class Menu_Info(object):
     def changer_mode_texte(self):
         self.texte1 = self.menus.generateurTexte.creer_surface_texte(f"Pour voir comment jouer, lire le fichier README.txt du dossier", 0.9*self.menus.wF, 0.3*self.menus.hF, 0.05, (255,255,255))
         self.positionTexte1 = (self.menus.wF/2-self.texte1.get_width()/2, 0.3*self.menus.hF)
-        self.texte2 = self.menus.generateurTexte.creer_surface_texte(f"Il est egalement possible de visionner le diaporama de presentation presentation.odp", 0.9*self.menus.wF, 0.3*self.menus.hF, 0.05, (255,255,255))
+        self.texte2 = self.menus.generateurTexte.creer_surface_texte(f"Il est egalement possible de visionner le diaporama de presentation presentation_projet_tetris.pdf", 0.9*self.menus.wF, 0.3*self.menus.hF, 0.05, (255,255,255))
         self.positionTexte2 = (self.menus.wF/2-self.texte2.get_width()/2, self.positionTexte1[1]+self.texte1.get_height()+0.1*self.menus.hF)
 
 
@@ -746,7 +746,7 @@ class Menu_didactique(object):
 
 
 class Menu_Jeu(object):
-    def __init__(self, menus, lAttributsPolice, horloge, nbColonnes, nbLignes, visuel, nbFramesAffichage, lNbNoeuds, algorithme, entrainementGreedy, entrainementGenetique, entrainementNES, entrainementDRL, gameInfini):
+    def __init__(self, menus, lAttributsPolice, horloge, nbColonnes, nbLignes, visuel, nbFramesAffichage, lNbNoeuds, algorithme, entrainementGreedy, entrainementGenetique, entrainementNES, entrainementDRL, gameInfini, charger_reseau, evaluation):
         self.menus = menus
         self.horloge = horloge
         self.actif = False
@@ -823,16 +823,25 @@ class Menu_Jeu(object):
             self.algo = Algorithme(jeu=self, lNbNoeuds=self.lNbNoeuds) #toujours vrai lui
             self.modeAlgo = False
             self.texteNbCoupsAlgo = None
-        #DRL
         self.reset()
         self.entrainementGreedy = entrainementGreedy
         if self.entrainementGreedy and self.algorithme:
             self.entrainement_greedy()
         self.entrainementGenetique = entrainementGenetique
+        if not self.entrainementGenetique and charger_reseau:
+            with open("lDicoReseau_GA_NN.txt") as fichier:
+                lDicoReseau = eval(fichier.read())
+            iMax = max(i if dicoReseau is not None else -1 for i, dicoReseau in enumerate(lDicoReseau))
+            if iMax > -1 :
+                self.algo.charger_dico_reseau_sans_tensor(lDicoReseau[iMax])
+            else :
+                print("Pas de Dico Reseau disponible !")
         if self.entrainementGenetique and self.algorithme:
             from TETRIS_Algorithm_Genetique_NN import Algorithme_Genetique
             self.algoGenetique = Algorithme_Genetique(jeu=self, algo=self.algo, lNbNoeuds=self.lNbNoeuds, tauxSurvivant=0.1, tauxRandom=0, nbLignes=self.nbLignes, nbColonnes=self.nbColonnes, modeCoups=3) if self.entrainementGenetique else None
             self.algoGenetique.entrainement()
+        if evaluation and self.algorithme:
+            self.algo.evaluation_algo(nbParties=int(input("nbParties Evaluation : ")), modele=self.algo.modele, affichage=True, visuel=False)
         self.entrainementNES = entrainementNES
         if self.entrainementNES and self.algorithme and False:
             from TETRIS_NES_v1 import Neural_Evolution_Strategies

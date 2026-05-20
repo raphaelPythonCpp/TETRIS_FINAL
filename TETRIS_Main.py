@@ -16,8 +16,8 @@ lAttributsPolice = (nomPolice, taillePolice, grasPolice, italiquePolice)
 police = pygame.font.SysFont(nomPolice, taillePolice, bold=grasPolice, italic=italiquePolice)
 
 game_infini = False
-charger_reseau = False
-evaluation = False
+charger_reseau = True
+evaluation = True
 
 env = Menus(fenetre=fenetre, lAttributsPolice=lAttributsPolice, horloge=horloge,
               nbColonnes=nbColonnes, nbLignes=nbLignes,
