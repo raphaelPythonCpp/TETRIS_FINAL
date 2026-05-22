@@ -2,3 +2,5 @@
 wIncons = min(wF/10, hF/10)
 
 - mettre en ligne le MENUS.ZIP
+
+- vérifier que tout est redimensionnable
