@@ -17,7 +17,7 @@ police = pygame.font.SysFont(nomPolice, taillePolice, bold=grasPolice, italic=it
 
 game_infini = False
 charger_reseau = True
-evaluation = True
+evaluation = False
 
 env = Menus(fenetre=fenetre, lAttributsPolice=lAttributsPolice, horloge=horloge,
               nbColonnes=nbColonnes, nbLignes=nbLignes,

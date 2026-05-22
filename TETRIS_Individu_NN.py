@@ -35,6 +35,7 @@ class Individu_NN(torch.nn.Module):
     def reset(self):
         self.nbCoups = 0
         self.score = 0
+        self.nbLignesSupprimees = 0
         self.finJeu = False
         self.grille = [[None]*self.nbColonnes for _ in range(self.nbLignes)]
         self.lPositionsPieces = []
@@ -100,6 +101,7 @@ class Individu_NN(torch.nn.Module):
 
     def changer_score(self, gain):
         self.score += gain
+        self.nbLignesSupprimees += 1
 
     def mettre_piece_hold(self):
         if self.holdPiece is None:

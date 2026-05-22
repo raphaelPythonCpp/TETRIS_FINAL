@@ -3,7 +3,7 @@ from collections import deque
 import numpy as np
 import random as rd
 from math import floor, ceil, sqrt
-from datetime import datetime
+import datetime
 from TETRIS_Tetromino import*
 
 class Menus(object):
@@ -26,7 +26,7 @@ class Menus(object):
         self.wBoutons = 50
         self.lPositionsBoutons = [[(5+i*1.1*self.wBoutons, 5) for i in range(10)], [(self.wF-(self.wBoutons+5+i*1.1*self.wBoutons), 5) for i in range(10)]]
 
-        self.menuJeu = Menu_Jeu(menus=self, lAttributsPolice=lAttributsPolice, horloge=self.horloge, nbColonnes=nbColonnes, nbLignes=nbLignes, visuel=visuel, nbFramesAffichage=nbFramesAffichage, lNbNoeuds=lNbNoeuds, algorithme=algorithme, entrainementGreedy=entrainementGreedy, entrainementGenetique=entrainementGenetique, entrainementNES=entrainementNES, entrainementDRL=entrainementDRL, gameInfini=gameInfini, charger_reseau=charger_reseau, evaluation=evaluation)
+        self.menuJeu = Menu_Jeu(menus=self, lAttributsPolice=lAttributsPolice, horloge=self.horloge, nbColonnes=nbColonnes, nbLignes=nbLignes, visuel=visuel, nbFramesAffichage=nbFramesAffichage, lNbNoeuds=lNbNoeuds, algorithme=algorithme, entrainementGreedy=entrainementGreedy, entrainementGenetique=entrainementGenetique, entrainementNES=entrainementNES, entrainementDRL=entrainementDRL, gameInfini=gameInfini, charger_reseau=charger_reseau)
         self.menuDidactique = Menu_didactique(self, ["hauteur max grille", "hauteur max piece", "somme hauteurs", "nb trous normaux", "score irregularites", "nb lignes", "score puits"], 50, avecTorch=self.menuJeu.algorithme) #ATTENTION : pas le bon nom de fichier
         self.menuHome = Menu_home(self)
         self.menuGameOver = Menu_Game_Over(self)
@@ -34,7 +34,8 @@ class Menus(object):
         self.menuCreation = Menu_Creation_Pieces(self, self.menuJeu.tailleMaxPieces)
         self.menuInfo = Menu_Info(self)
         self.menuEstimation = Menu_Estimation(self)
-        self.lMenus = [self.menuJeu, self.menuHome, self.menuDidactique, self.menuGameOver, self.menuParametres, self.menuCreation, self.menuInfo, self.menuEstimation]
+        self.menuClassement = Menu_Classement(self, nbScores=10)
+        self.lMenus = [self.menuJeu, self.menuHome, self.menuDidactique, self.menuGameOver, self.menuParametres, self.menuCreation, self.menuInfo, self.menuEstimation, self.menuClassement]
 
         self.lFonds = ["background_1.jpg", "background_2.jpeg", "background_3.jpg"]
         self.iFond = 0
@@ -57,6 +58,10 @@ class Menus(object):
             self.sonCollision = pygame.mixer.Sound(f"{self.cheminMusiques}\\son_collision.mp3")
             self.lSons = self.lSonsClique + [self.sonCroc, self.sonSwap, self.sonMouvement, self.sonCollision]
             self.son = True
+
+        if evaluation and self.menuJeu.algorithme:
+            self.menuJeu.algo.evaluation_algo(nbParties=int(input("nbParties Evaluation : ")), modele=self.menuJeu.algo.modele, affichage=True, visuel=False)
+        
 
     def boucle(self):
         self.actif = True
@@ -177,6 +182,8 @@ class Menu_home(object):
         self.boutonMenuCreation = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "inventaire.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][1], True, False)
         self.boutonMenuInfo = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "info.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][3], True, False)
         self.boutonMenuEstimation = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "amis.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][4], True, False)
+        self.boutonMenuClassement = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "succes.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][5], True, False)
+
 
         wBoutonsNiveau = 150
         xInitBoutonsNiveau = self.menus.wF/2 - 3/2*1.1*wBoutonsNiveau
@@ -203,8 +210,12 @@ class Menu_home(object):
         self.boutonJouer.image.position = (self.menus.wF/2 - self.boutonJouer.image.dimensions[0]/2, self.menus.hF/2+30-self.boutonJouer.image.dimensions[1])
 
         self.lImages = [self.imGrilleEasy, self.imGrilleMedium, self.imGrilleHard, self.texteHome]
-        self.lBoutons = [self.boutonMenuDidactique, self.boutonEasy, self.boutonMedium, self.boutonHard, self.boutonJouer, self.boutonMenuParametres, self.boutonMenuCreation, self.boutonMenuInfo, self.boutonMenuEstimation]
+        self.lBoutons = [self.boutonMenuDidactique, self.boutonEasy, self.boutonMedium, self.boutonHard, self.boutonJouer, self.boutonMenuParametres, self.boutonMenuCreation, self.boutonMenuInfo, self.boutonMenuEstimation, self.boutonMenuClassement]
         self.lElements = self.lImages + self.lBoutons
+
+    def reset(self):
+        #self.changer_mode_texte()
+        pass
 
     def afficher(self):
         self.imFond.afficher(self.menus.fenetre)
@@ -226,22 +237,32 @@ class Menu_home(object):
         if self.boutonJouer2.gerer_souris() and not lTouchesPressees[pygame.K_q]:
             self.actif = False
             self.menus.menuJeu.actif = True
-            self.menus.menuJeu.jouer()
+            self.menus.menuJeu.modeGrille = self.iNiveau
+            self.menus.menuJeu.reset()
         if self.boutonMenuDidactique.gerer_souris():
             self.actif = False
             self.menus.menuDidactique.actif = True
+            self.menus.menuDidactique.reset()
         if self.boutonMenuParametres.gerer_souris():
             self.actif = False
             self.menus.menuParametres.actif = True
+            self.menus.menuParametres.reset()
         if self.boutonMenuCreation.gerer_souris():
             self.actif = False
             self.menus.menuCreation.actif = True
+            self.menus.menuCreation.reset()
         if self.boutonMenuInfo.gerer_souris():
             self.actif = False
             self.menus.menuInfo.actif = True
+            self.menus.menuInfo.reset()
         if self.boutonMenuEstimation.gerer_souris():
             self.actif = False
             self.menus.menuEstimation.actif = True
+            self.menus.menuEstimation.reset()
+        if self.boutonMenuClassement.gerer_souris():
+            self.actif = False
+            self.menus.menuClassement.actif = True
+            self.menus.menuClassement.reset()
 
         if self.boutonEasy.gerer_souris():
             self.iNiveau = 0
@@ -258,7 +279,8 @@ class Menu_home(object):
         if self.boutonJouer.gerer_souris():
             self.actif = False
             self.menus.menuJeu.actif = True
-            self.menus.menuJeu.jouer()
+            self.menus.menuJeu.modeGrille = self.iNiveau
+            self.menus.menuJeu.reset()
 
 
 
@@ -284,15 +306,18 @@ class Menu_Parametres(object):
         self.boutonMusique = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "changer_musique.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][3], True, False)
         self.boutonSon = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "changer_son.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[1][4], True, False)
 
-        self.sliderMusique = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Musique", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.15*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
-        self.sliderSon = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Son Clic", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.45*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
-        self.sliderLuminosite = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Luminosite fond", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_orange.png", nomForme="forme_orange.png", rectangleFond=(0.025*self.menus.wF, 0.75*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.45, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=11, iValeur=3, couleurFond=(128,128,128,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderMusique = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Musique", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.15*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.3, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=16, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderSon = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="volume Son Clic", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.45*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.3, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=16, iValeur=3, couleurFond=(255,0,255,180), couleurTexte=(0,0,0,180), interactif=True)
+        self.sliderLuminosite = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Luminosite fond", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_orange.png", nomForme="forme_orange.png", rectangleFond=(0.025*self.menus.wF, 0.75*self.menus.hF, 0.95*self.menus.wF, 0.2*self.menus.hF), caracteristiquesTexte=(0.3, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=16, iValeur=3, couleurFond=(128,128,128,180), couleurTexte=(0,0,0,180), interactif=True)
 
 
         self.lImages = [self.texteParametres]
         self.lBoutons = [self.boutonHome, self.boutonEcriture, self.boutonFond, self.boutonMusique, self.boutonSon]
         self.lSliders = [self.sliderMusique, self.sliderSon, self.sliderLuminosite]
         self.lElements = self.lImages + self.lBoutons + self.lSliders
+
+    def reset(self):
+        self.changer_mode_texte()
 
     def afficher(self):
         self.imFond.afficher(self.menus.fenetre)
@@ -312,10 +337,10 @@ class Menu_Parametres(object):
         if self.boutonHome.gerer_souris():
             self.actif = False
             self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
         if self.boutonEcriture.gerer_souris():
             self.menus.modeTexte = "POLICE" if self.menus.modeTexte == "IMAGES" else "IMAGES"
-            for slider in self.lSliders:
-                slider.changer_mode_texte()
+            self.changer_mode_texte()
         if self.boutonFond.gerer_souris():
             self.menus.iFond = (self.menus.iFond+1)%len(self.menus.lFonds)
             self.menus.changer_fond()
@@ -352,6 +377,10 @@ class Menu_Parametres(object):
                 elif slider == self.sliderLuminosite:
                     self.menus.aImFond = int(255 * self.sliderLuminosite.valeur/100)
                     self.menus.changer_transparence_fond()
+        
+    def changer_mode_texte(self):
+        for slider in self.lSliders:
+            slider.changer_mode_texte()
 
 
 
@@ -389,6 +418,10 @@ class Menu_Creation_Pieces(object):
         with open("dicoMatricesPiecesJolies.txt") as fichier:
             self.dicoMatricesPieces = eval(fichier.read())
 
+    def reset(self):
+        pass
+        #self.changer_mode_texte()
+
     def afficher(self):
         self.imFond.afficher(self.menus.fenetre)
         for element in self.lElements:
@@ -399,6 +432,7 @@ class Menu_Creation_Pieces(object):
         if self.boutonHome.gerer_souris():
             self.actif = False
             self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
             self.menus.menuJeu.charger_matrices(self.dicoMatricesPieces)
             sTypePieces = set()
             for k,o in self.menus.menuJeu.dicoMatricesPieces.keys():
@@ -483,6 +517,9 @@ class Menu_Info(object):
 
         self.changer_mode_texte()
 
+    def reset(self):
+        self.changer_mode_texte()
+
     def afficher(self):
         self.imFond.afficher(self.menus.fenetre)
         for element in self.lElements:
@@ -494,6 +531,7 @@ class Menu_Info(object):
         if self.boutonHome.gerer_souris():
             self.actif = False
             self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
         if self.boutonEcriture.gerer_souris():
             self.menus.modeTexte = "POLICE" if self.menus.modeTexte == "IMAGES" else "IMAGES"
             self.changer_mode_texte()
@@ -501,7 +539,7 @@ class Menu_Info(object):
     def changer_mode_texte(self):
         self.texte1 = self.menus.generateurTexte.creer_surface_texte(f"Pour voir comment jouer, lire le fichier README.txt du dossier", 0.9*self.menus.wF, 0.3*self.menus.hF, 0.05, (255,255,255))
         self.positionTexte1 = (self.menus.wF/2-self.texte1.get_width()/2, 0.3*self.menus.hF)
-        self.texte2 = self.menus.generateurTexte.creer_surface_texte(f"Il est egalement possible de visionner le diaporama de presentation presentation_projet_tetris.pdf", 0.9*self.menus.wF, 0.3*self.menus.hF, 0.05, (255,255,255))
+        self.texte2 = self.menus.generateurTexte.creer_surface_texte(f"Il est egalement possible de visionner le diaporama de presentation presentation-projet-tetris.pdf", 0.9*self.menus.wF, 0.3*self.menus.hF, 0.05, (255,255,255))
         self.positionTexte2 = (self.menus.wF/2-self.texte2.get_width()/2, self.positionTexte1[1]+self.texte1.get_height()+0.1*self.menus.hF)
 
 
@@ -544,6 +582,9 @@ class Menu_Estimation(object):
         self.calculer_accuracy()
         self.changer_mode_texte()
 
+    def reset(self):
+        self.changer_mode_texte()
+
     def afficher(self):
         self.imFond.afficher(self.menus.fenetre)
         self.lBoutonsTitre[self.iBoutonsTitre].afficher(self.menus.fenetre)
@@ -560,6 +601,7 @@ class Menu_Estimation(object):
         if self.boutonHome.gerer_souris():
             self.actif = False
             self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
         if self.lBoutonsTitre[self.iBoutonsTitre].gerer_souris():
             self.iBoutonsTitre = (self.iBoutonsTitre+1)%len(self.lBoutonsTitre)
         if self.boutonEcriture.gerer_souris():
@@ -568,11 +610,11 @@ class Menu_Estimation(object):
         if self.boutonValider.gerer_souris() and self.accuracy == 1:
             self.trouve = not self.trouve
             if not self.trouve:
-                for slider in self.lSliders :
+                for slider in self.lSliders[:3] :
                     slider.iValeur = 0
                     slider.maj_valeur()
         if self.boutonReset.gerer_souris() and not self.trouve:
-            for slider in self.lSliders :
+            for slider in self.lSliders[:3] :
                 slider.iValeur = 0
                 slider.maj_valeur()
         
@@ -597,9 +639,82 @@ class Menu_Estimation(object):
 
     def calculer_accuracy(self):
         self.accuracy = 1 - sum(abs(slider.valeur/100 - valeurATrouver) for slider,valeurATrouver in zip(self.lSliders[:3], self.lValeursATrouver)) / len(self.lValeursATrouver)
-        self.sliderAccuracy.iValeur = int((self.sliderAccuracy.nbValeurs-1) * self.accuracy)
-        self.sliderAccuracy.maj_valeur()
+        self.sliderAccuracy.changer_valeur(100*self.accuracy, reel=False)
 
+
+
+
+
+class Menu_Classement(object):
+    def __init__(self, menus, nbScores):
+        self.menus = menus
+
+        self.actif = False
+
+        self.imFond = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\IMAGES", self.menus.dossierOutput, "background_1.jpg", None, self.menus.fenetre.get_height(), (0, 0), False, True)
+        self.texteClassement = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "texte_perdu.png", None, 0.08*self.menus.hF, None, True, False)
+        self.texteClassement.position = ((self.menus.wF-self.texteClassement.dimensions[0])/2, 0.01*self.menus.hF)
+        self.boutonHome = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "accueil.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][0], True, False)
+        self.boutonEcriture = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "ecriture.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][1], True, False)
+
+        self.nbScores = nbScores
+        self.lSliders = []
+        yMinSliders = 0.13
+        dySliders = (1-yMinSliders) / self.nbScores
+        hSliders = dySliders * 0.9
+        for i in range(self.nbScores):
+            self.lSliders.append(Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom=f"Score {i}", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_rouge.png", nomForme="forme_rouge.png", rectangleFond=(0.32*self.menus.wF, (yMinSliders+dySliders*i)*self.menus.hF, 0.3*self.menus.wF, hSliders*self.menus.hF), caracteristiquesTexte=(0.25, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(255,0,9,180), couleurTexte=(0,0,0,180), interactif=False))
+            self.lSliders.append(Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom=f"Nb Coups {i}", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.67*self.menus.wF, (yMinSliders+dySliders*i)*self.menus.hF, 0.3*self.menus.wF, hSliders*self.menus.hF), caracteristiquesTexte=(0.25, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(0,255,0,180), couleurTexte=(0,0,0,180), interactif=False))
+        self.lDates, self.lTextes = [], []
+
+        self.lImages = [self.texteClassement]
+        self.lBoutons = [self.boutonHome]
+        self.lElements = self.lImages + self.lBoutons + self.lSliders
+
+    def reset(self):
+        with open("liste_anciens_resultats_jeu.txt", 'r') as fichier:
+            lDicoRes = eval('['+','.join(fichier.readlines())+']')
+        lDicoRes.sort(key=lambda dico:dico["score"], reverse=True)
+        lDicoRes = lDicoRes[:min(self.nbScores, len(lDicoRes))]
+        scoreMax = max(dicoRes["score"] for dicoRes in lDicoRes)
+        nbCoupsMax = max(dicoRes["nbCoups"] for dicoRes in lDicoRes)
+        self.lDates = []
+        for i, dicoRes in enumerate(lDicoRes):
+            self.lDates.append(f"{dicoRes['date'].day} - {dicoRes['date'].month} - {dicoRes['date'].year}")
+            score, nbCoups = dicoRes["score"], dicoRes["nbCoups"]
+            nbLignesMax = (4*nbCoupsMax)//self.menus.menuJeu.nbColonnes
+            #scoreMax = nbLignesMax//4 * self.menus.menuJeu.dicoScores[4] + self.menus.menuJeu.dicoScores[nbLignesMax%4]
+            self.lSliders[2*i].changer_valeur(100* score / scoreMax)
+            self.lSliders[2*i+1].changer_valeur(100* nbCoups / nbCoupsMax)
+        self.changer_mode_texte()
+
+    def afficher(self):
+        self.imFond.afficher(self.menus.fenetre)
+        for element in self.lElements:
+            element.afficher(self.menus.fenetre)
+        for texte,positionTexte in self.lTextes:
+            self.menus.fenetre.blit(texte, positionTexte)
+
+    def gerer_souris(self, lEvents):
+        if self.boutonHome.gerer_souris():
+            self.actif = False
+            self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
+        if self.boutonEcriture.gerer_souris():
+            self.menus.modeTexte = "POLICE" if self.menus.modeTexte == "IMAGES" else "IMAGES"
+            self.changer_mode_texte()
+        for slider in self.lSliders:
+            slider.gerer_souris()
+
+    def changer_mode_texte(self):
+        self.lTextes = []
+        for i,date in enumerate(self.lDates):
+            texte = self.menus.generateurTexte.creer_surface_texte(date, 0.3*self.menus.wF, self.lSliders[2*i].hFond, 0.05, (255,255,255))
+            positionTexte = (0.15*self.menus.wF - texte.get_width()/2, self.lSliders[2*i].yFond + self.lSliders[2*i].hFond/2 - texte.get_height()/2)
+            self.lTextes.append((texte,positionTexte))
+            print(date, positionTexte, i, self.lSliders[2*i])
+        for slider in self.lSliders:
+            slider.changer_mode_texte()
 
 
 
@@ -613,25 +728,59 @@ class Menu_Game_Over(object):
         self.actif = False
 
         self.imFond = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\IMAGES", self.menus.dossierOutput, "background_1.jpg", None, self.menus.fenetre.get_height(), (0, 0), False, True)
+        self.imGameOver = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\IMAGES", self.menus.dossierOutput, "game_over_2.png", self.menus.wF, None, None, False, True)
+        self.imGameOver.position = (0, self.menus.hF - self.imGameOver.dimensions[1])
         self.textePerdu = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "texte_perdu.png", None, 0.08*self.menus.hF, None, True, False)
         self.textePerdu.position = ((self.menus.wF-self.textePerdu.dimensions[0])/2, 0.01*self.menus.hF)
         self.boutonHome = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "accueil.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][0], True, False)
-        self.imGameOver = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\IMAGES", self.menus.dossierOutput, "game_over_2.png", self.menus.wF, None, None, False, True)
-        self.imGameOver.position = (0, self.menus.hF - self.imGameOver.dimensions[1])
+        self.boutonEcriture = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "ecriture.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][1], True, False)
+
+        self.sliderScore = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Pourcentage Score", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_rouge.png", nomForme="forme_rouge.png", rectangleFond=(0.025*self.menus.wF, 0.7*self.menus.hF, 0.95*self.menus.wF, 0.1*self.menus.hF), caracteristiquesTexte=(0.25, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(255,0,9,180), couleurTexte=(0,0,0,180), interactif=False)
+        self.sliderNbCoups = Slider(menus=self.menus, menu=self, dossier1=self.menus.dossier, dossier2=f"{self.menus.dossierInput}\\ELEMENTS_SLIDERS", dossier3=self.menus.dossierOutput, nom="Pourcentage Nb Coups", nomCadre="cadre_barre_11.png", nomCarreNoir="carre_noir.png", nomCarreColore="carre_vert.png", nomForme="forme_verte.png", rectangleFond=(0.025*self.menus.wF, 0.85*self.menus.hF, 0.95*self.menus.wF, 0.1*self.menus.hF), caracteristiquesTexte=(0.25, 0.6, 0.05), enregistrement=False, valeurMin=0, valeurMax=100, nbValeurs=21, iValeur=0, couleurFond=(0,255,0,180), couleurTexte=(0,0,0,180), interactif=False)
 
         self.lImages = [self.imGameOver, self.textePerdu]
         self.lBoutons = [self.boutonHome]
-        self.lElements = self.lImages + self.lBoutons
+        self.lSliders = [self.sliderScore, self.sliderNbCoups]
+        self.lElements = self.lImages + self.lBoutons + self.lSliders
+
+        self.date = "None"
+        self.changer_mode_texte()
+
+    def reset(self):
+        with open("liste_anciens_resultats_jeu.txt", 'r') as fichier:
+            dicoRes = eval(fichier.readlines()[-1])
+        self.date = f"{dicoRes['date'].day} - {dicoRes['date'].month} - {dicoRes['date'].year}"
+        self.score, self.nbCoups, self.nbCoupsMax = dicoRes["score"], dicoRes["nbCoups"], dicoRes["nbCoupsMax"]
+        nbLignesMax = (4*self.nbCoupsMax)//self.menus.menuJeu.nbColonnes
+        scoreMax = nbLignesMax//4 * self.menus.menuJeu.dicoScores[4] + self.menus.menuJeu.dicoScores[nbLignesMax%4]
+        self.sliderScore.changer_valeur(100* self.score / scoreMax)
+        self.sliderNbCoups.changer_valeur(100* self.nbCoups / self.nbCoupsMax)
+        self.changer_mode_texte()
 
     def afficher(self):
         self.imFond.afficher(self.menus.fenetre)
         for element in self.lElements:
             element.afficher(self.menus.fenetre)
+        self.menus.fenetre.blit(self.texteDate, self.positionTexteDate)
 
     def gerer_souris(self, lEvents):
         if self.boutonHome.gerer_souris():
             self.actif = False
             self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
+        if self.boutonEcriture.gerer_souris():
+            self.menus.modeTexte = "POLICE" if self.menus.modeTexte == "IMAGES" else "IMAGES"
+            self.changer_mode_texte()
+        for slider in self.lSliders:
+            slider.gerer_souris()
+
+    def changer_mode_texte(self):
+        self.texteDate = self.menus.generateurTexte.creer_surface_texte(self.date, 0.9*self.menus.wF, 0.1*self.menus.hF, 0.05, (255,255,255))
+        self.positionTexteDate = (self.menus.wF/2 - self.texteDate.get_width()/2, 0.625*self.menus.hF - self.texteDate.get_height()/2)
+        self.sliderScore.changer_mode_texte()
+        self.sliderNbCoups.changer_mode_texte()
+            
+
 
 
 
@@ -691,6 +840,10 @@ class Menu_didactique(object):
         self.scoreMoyen, self.nbCoupsMoyen = 0,0
         self.changer_resultats()
 
+    def reset(self):
+        self.changer_mode_texte()
+        self.changer_resultats()
+
     def afficher(self):
         self.imFond.afficher(self.menus.fenetre)
         for element in self.lElements:
@@ -714,11 +867,10 @@ class Menu_didactique(object):
         if self.boutonHome.gerer_souris():
             self.actif = False
             self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
         if self.boutonEcriture.gerer_souris():
             self.menus.modeTexte = "POLICE" if self.menus.modeTexte == "IMAGES" else "IMAGES"
-            for slider in self.lSliders:
-                slider.changer_mode_texte()
-            self.changer_resultats()
+            self.changer_mode_texte()
         if self.boutonReset.gerer_souris():
             for slider in self.lSliders[:-1]:
                 slider.iValeur = slider.nbValeurs // 2
@@ -727,6 +879,11 @@ class Menu_didactique(object):
             self.evaluation()
         for slider in self.lSliders:
             slider.gerer_souris()
+
+    def changer_mode_texte(self):
+        for slider in self.lSliders:
+            slider.changer_mode_texte()
+        self.changer_resultats()
 
     def changer_resultats(self):
         wMilieu = self.menus.wF * (1+0.5)/2
@@ -746,7 +903,7 @@ class Menu_didactique(object):
 
 
 class Menu_Jeu(object):
-    def __init__(self, menus, lAttributsPolice, horloge, nbColonnes, nbLignes, visuel, nbFramesAffichage, lNbNoeuds, algorithme, entrainementGreedy, entrainementGenetique, entrainementNES, entrainementDRL, gameInfini, charger_reseau, evaluation):
+    def __init__(self, menus, lAttributsPolice, horloge, nbColonnes, nbLignes, visuel, nbFramesAffichage, lNbNoeuds, algorithme, entrainementGreedy, entrainementGenetique, entrainementNES, entrainementDRL, gameInfini, charger_reseau):
         self.menus = menus
         self.horloge = horloge
         self.actif = False
@@ -840,8 +997,6 @@ class Menu_Jeu(object):
             from TETRIS_Algorithm_Genetique_NN import Algorithme_Genetique
             self.algoGenetique = Algorithme_Genetique(jeu=self, algo=self.algo, lNbNoeuds=self.lNbNoeuds, tauxSurvivant=0.1, tauxRandom=0, nbLignes=self.nbLignes, nbColonnes=self.nbColonnes, modeCoups=3) if self.entrainementGenetique else None
             self.algoGenetique.entrainement()
-        if evaluation and self.algorithme:
-            self.algo.evaluation_algo(nbParties=int(input("nbParties Evaluation : ")), modele=self.algo.modele, affichage=True, visuel=False)
         self.entrainementNES = entrainementNES
         if self.entrainementNES and self.algorithme and False:
             from TETRIS_NES_v1 import Neural_Evolution_Strategies
@@ -888,6 +1043,7 @@ class Menu_Jeu(object):
         self.grille = self.lGrilles[self.iGrille]
         self.grilleNext = [[None]*self.tailleMaxPieces for _ in range(self.tailleMaxPieces)]
         self.grilleHold = [[None]*self.tailleMaxPieces for _ in range(self.tailleMaxPieces)]
+        self.changer_grille(delta=0)
         #self.limiter_grille()
         #Pieces
         self.lProchainesPieces = []
@@ -901,6 +1057,7 @@ class Menu_Jeu(object):
         self.calculer_sommeNbBlocs(ajout=0)
         if self.algorithme:
             self.algo.changer_nb_coups(ajout=0)
+        self.changer_images_logo()
 
     def tester_jeu(self, nbParties):
         print("Fonction plus disponible...")
@@ -912,18 +1069,17 @@ class Menu_Jeu(object):
                 break
             if self.menus:
                 self.menus.menuGameOver.actif = True
-                self.menus.boucle()
-
-    def jouer(self, modeAlgo=False):
-        self.modeGrille = self.menus.menuHome.iNiveau
-        self.changer_grille(delta=0)
-        self.reset(modeAlgo=modeAlgo)
-        self.changer_images_logo()
+                self.menus.boucle()    
 
     def gerer_souris(self, lEvents):
         if self.finJeu:
             self.actif = False
             self.menus.menuGameOver.actif = True
+            self.menus.menuGameOver.reset()
+            with open("liste_anciens_resultats_jeu.txt","a") as fichier:
+                fichier.write(str({"score":self.score, "nbCoups":self.nbCoups, "nbCoupsMax":self.nbCoupsMax, "date":datetime.datetime.now()}))
+                fichier.write('\n')
+            self.menus.menuGameOver.reset()
         if self.algorithme and self.modeAlgo:
             for i in range(self.nbFramesAffichage):
                 self.algo.appliquer_position()
@@ -1015,7 +1171,7 @@ class Menu_Jeu(object):
             self.finJeu = True
 
     def changer_game_nb_coups_max(self, gameInfini):
-        self.nbCoupsMax = 1e9 if gameInfini else 1000#int(input("nbCoupsMax : "))
+        self.nbCoupsMax = 1e9 if gameInfini else 100#int(input("nbCoupsMax : "))
 
     def changer_somme_nb_blocs(self, actif):
         self.calcul_sommeNbBlocs = actif
@@ -1252,14 +1408,15 @@ class Slider(object):
         self.fond = pygame.Surface((self.wFond, self.hFond), pygame.SRCALPHA)
         self.borderRadiusFond = round(min(self.fond.get_size())*0.3)
 
-        self.wCarres = round(0.4*self.wFond / (nbValeurs-1))
-        self.imCadre = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCadre, w=round(self.wCarres*(nbValeurs-1)), h=None, position=(0.53*self.wFond, 0.45*self.hFond), transparence=False, enregistrement=enregistrement)
+        wT, hT, eT = caracteristiquesTexte
+        self.wCarres = round((1-wT-0.2)*self.wFond / (nbValeurs-1))
+        self.imCadre = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCadre, w=round(self.wCarres*(nbValeurs-1)), h=None, position=((wT+0.1)*self.wFond, 0.45*self.hFond), transparence=False, enregistrement=enregistrement)
         self.imCarreNoir = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCarreNoir, self.wCarres, None, None, False, enregistrement)
         self.imCarreColore = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomCarreColore, self.wCarres, None, None, False, enregistrement)
         hForme = round(0.7*self.wCarres)
         self.imForme = Image(self.menus, self.menu, dossier1, dossier2, dossier3, nomForme, None, hForme, None, True, enregistrement)
         self.xDebutCarres = round(self.imCadre.position[0]+self.imCadre.dimensions[0]/2 - (nbValeurs-1)/2*self.wCarres)
-        self.yDebutCarres = round(self.imCadre.position[1]+self.imCadre.dimensions[1]/2 - self.imCarreColore.dimensions[1]/2)
+        self.yDebutCarres = round(self.imCadre.position[1])
 
         self.nbValeurs = nbValeurs
         self.iValeur = self.nbValeurs//2 if iValeur is None else iValeur
@@ -1337,12 +1494,13 @@ class Slider(object):
             self.xSA, self.ySA = xS, yS
         return changement
 
-    def changer_valeur(self, valeur):
+    def changer_valeur(self, valeur, reel=True):
         iValeur = max(i if v<=valeur else -1 for i,v in enumerate(self.lValeurs))
         if iValeur != self.iValeur:
             self.iValeur = iValeur
             self.maj_valeur()
-            self.menus.afficher()
+            if reel:
+                self.menus.afficher()
 
     def maj_valeur(self):
         self.valeur = self.lValeurs[self.iValeur]
@@ -1351,18 +1509,18 @@ class Slider(object):
 
     def maj_valeur_min(self):
         self.texteValeurMin = self.menus.generateurTexte.creer_surface_texte(str(self.valeurMin), 0.2*self.wFond, 0.3*self.hFond, 0.05, self.couleurTexte)
-        self.positionTexteVMin = (self.imCadre.position[0]-(self.texteValeurMin.get_width()+self.imCarreNoir.image.get_width()/2), self.imCadre.position[1]+(self.imCadre.dimensions[1]-self.texteValeurMin.get_height())/2)
+        self.positionTexteVMin = (self.imCadre.position[0]-(self.texteValeurMin.get_width()+self.imCarreNoir.image.get_width()/2), self.imCadre.position[1]+(self.wCarres-self.texteValeurMin.get_height())/2)
 
     def maj_valeur_max(self):
         self.texteValeurMax = self.menus.generateurTexte.creer_surface_texte(str(self.valeurMax), 0.06*self.wFond, 0.3*self.hFond, 0.05, self.couleurTexte)
-        self.positionTexteVMax = (self.lPositionsCarres[-1][0]+1.2*self.wCarres, self.imCadre.position[1]+(self.imCadre.dimensions[1]-self.texteValeurMax.get_height())/2)
+        self.positionTexteVMax = (self.lPositionsCarres[-1][0]+1.2*self.wCarres, self.imCadre.position[1]+(self.wCarres-self.texteValeurMax.get_height())/2)
 
     def maj_nom(self):
         wT, hT, eT = self.caracteristiquesTexte
         wTexte = wT*self.wFond
         hTexte = hT*self.hFond
         self.texteNom = self.menus.generateurTexte.creer_surface_texte(self.nom, wTexte, hTexte, eT, self.couleurTexte)
-        self.positionTexteNom = ((wTexte-self.texteNom.get_width())/2, self.imCadre.position[1])#(self.hFond-self.texteNom.get_height())/2)
+        self.positionTexteNom = ((wTexte-self.texteNom.get_width())/2, (self.hFond-self.texteNom.get_height())/2)
 
 
 
@@ -1486,3 +1644,37 @@ class Image(object):
             xS, yS = pygame.mouse.get_pos()
         return (self.position[0] <= xS <= self.position[0]+self.dimensions[0]) and (self.position[1] <= yS <= self.position[1]+self.dimensions[1])
 
+class Menu_Type(object):
+    def __init__(self, menus):
+        self.menus = menus
+
+        self.actif = False
+
+        self.imFond = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\IMAGES", self.menus.dossierOutput, "background_1.jpg", None, self.menus.fenetre.get_height(), (0, 0), False, True)
+        self.texte = Image(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\TEXTES", self.menus.dossierOutput, "None.png", None, 0.08*self.menus.hF, None, True, False)
+        self.texte.position = ((self.menus.wF-self.texte.dimensions[0])/2, 0.01*self.menus.hF)
+        self.boutonHome = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "accueil.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][0], True, False)
+        self.boutonEcriture = Bouton(self.menus, self, self.menus.dossier, f"{self.menus.dossierInput}\\ICONS", self.menus.dossierOutput, "ecriture.png", self.menus.wBoutons, None, self.menus.lPositionsBoutons[0][1], True, False)
+
+        self.lImages = [self.texteInfo]
+        self.lBoutons = [self.boutonHome, self.boutonEcriture]
+        self.lElements = self.lImages + self.lBoutons
+
+        self.changer_mode_texte()
+
+    def afficher(self):
+        self.imFond.afficher(self.menus.fenetre)
+        for element in self.lElements:
+            element.afficher(self.menus.fenetre)
+
+    def gerer_souris(self, lEvents):
+        if self.boutonHome.gerer_souris():
+            self.actif = False
+            self.menus.menuHome.actif = True
+            self.menus.menuHome.reset()
+        if self.boutonEcriture.gerer_souris():
+            self.menus.modeTexte = "POLICE" if self.menus.modeTexte == "IMAGES" else "IMAGES"
+            self.changer_mode_texte()
+
+    def changer_mode_texte(self):
+        pass

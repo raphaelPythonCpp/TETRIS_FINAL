@@ -54,6 +54,8 @@ Des explications supplémentaires sur ces graphiques et le GA peuvent être proc
 
 Enfin, un entrainement 'greedy', ou combinatorial' est disponible, mais il est très peut utile et prend infiniment trop de temps. Ne pas l'utiliser, et préférer un GA court
 
+Au total, il y a environ 3000 lignes de codes (encore une fois toutes écrites à la main par R)
+
 Note estimée méritée : 15/20 graphismes + 100/20 algorithmique + 15/20 idées + 0/20 partenaires + 10/20 période + 50/100 temps => +20/20
 Noter que tout est hérité et compris par un (seul?) petit cerveau humain, et non d'un énorme datacenter qui a scrappé tout Internet.
 

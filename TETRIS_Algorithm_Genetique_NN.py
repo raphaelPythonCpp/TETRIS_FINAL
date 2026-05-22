@@ -121,13 +121,13 @@ class Algorithme_Genetique(object):
                 if self.visuelEntrainement :
                     self.jeu.fenetre.fill((0,0,0))
                     self.jeu.afficher_grille(individu.grille, self.jeu.tailleCase, self.jeu.xDebutCases, self.jeu.yDebutCases, piece=individu.piece, ombre=False, coin=False)
-                    self.jeu.fenetre.blit(self.jeu.police.render(f"Score : {individu.score}", False, self.jeu.couleurTextes), (0, 0))
+                    self.jeu.fenetre.blit(self.jeu.police.render(f"NbLignesSupprimees : {individu.nbLignesSupprimees}", False, self.jeu.couleurTextes), (0, 0))
                     self.jeu.fenetre.blit(self.jeu.police.render(f"Individu : {i}", False, self.jeu.couleurTextes), (0, 30))
                     pygame.display.flip()
                     pygame.time.delay(50)
             nbIndividusRestants = sum(not individu.finJeu for individu in self.lIndividus)
         for iI, individu in enumerate(self.lIndividus):
-            lRes[iI][1] += individu.score
+            lRes[iI][1] += individu.nbLignesSupprimees
             lRes[iI][2] += individu.nbCoups
 
     def analyse_partie(self, lRes, lIndividus, nbParties, affichage):
@@ -200,3 +200,7 @@ class Algorithme_Genetique(object):
             v3 = torch.where(masque, v1, v2) + bruit
             dicoReseau3[k1] = v3
         return dicoReseau3
+    
+
+"""A FAIRE:
+- ajouter un systeme de répartition de parties de différents nbCoupsMax"""

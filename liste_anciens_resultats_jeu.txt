@@ -1,0 +1,12 @@
+{'score': 2120, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 1, 0, 72257)}
+{'score': 2360, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 2, 38, 400661)}
+{'score': 2360, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 3, 38, 724622)}
+{'score': 1800, 'nbCoups': 89, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 5, 36, 947165)}
+{'score': 2180, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 8, 12, 137024)}
+{'score': 2240, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 9, 39, 469098)}
+{'score': 2160, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 9, 59, 708162)}
+{'score': 2220, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 13, 51, 998503)}
+{'score': 2160, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 21, 22, 15, 42, 496618)}
+{'score': 2240, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 22, 19, 58, 37, 975015)}
+{'score': 2340, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 22, 20, 16, 58, 577088)}
+{'score': 2180, 'nbCoups': 100, 'nbCoupsMax': 100, 'date': datetime.datetime(2026, 5, 22, 20, 57, 31, 483344)}
