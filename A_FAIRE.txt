@@ -1,0 +1,4 @@
+- modifier la taille des boutons_icons pour les meilleurs en adaptatif :
+wIncons = min(wF/10, hF/10)
+
+- mettre en ligne le MENUS.ZIP
