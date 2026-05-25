@@ -1,5 +1,6 @@
 import pygame
 import random as rd
+from math import sqrt
 
 class Tetromino(object):
     def __init__(self, jeu, type, entrainement=False):
@@ -12,9 +13,8 @@ class Tetromino(object):
         self.x = self.jeu.nbColonnes//2 - 1
         self.y = -min(dy for dx,dy in self.matrice)
         if not self.entrainement:
-            self.deltaTempsInit = 1000
+            self.deltaTemps = 0
             self.tempsAvant = pygame.time.get_ticks()
-            self.deltaTemps = self.deltaTempsInit #ms
             self.bouge = True
             self.yOmbre = 0
 
@@ -26,7 +26,7 @@ class Tetromino(object):
         self.y = -min(dy for dx,dy in self.matrice)
         if not self.entrainement:
             self.tempsAvant = pygame.time.get_ticks()
-            self.deltaTemps = self.deltaTempsInit #ms
+            self.deltaTemps = self.jeu.deltaTemps #ms
             self.bouge = True
             self.yOmbre = 0
 
@@ -40,7 +40,8 @@ class Tetromino(object):
         if pygame.time.get_ticks() >= self.tempsAvant+self.deltaTemps:
             self.tempsAvant = pygame.time.get_ticks()
             self.descendre(grille)
-    def descendre(self, grille, dy=1):
+
+    def descendre(self, grille):
         if self.jeu.tester_chevauchement(grille, self.x, self.y+1, self.orientation, self.type):
             self.fixer(grille, tester_lignes=True, reel=True)
         else :
@@ -59,6 +60,8 @@ class Tetromino(object):
             self.jeu.calculer_sommeNbBlocs(ajout=4) #ATTENTION A modifier si tetromino plus seulement de 4 pièces
             self.jeu.generer_piece()
         self.jeu.changer_grille(delta=1)
+        self.jeu.deltaTemps = self.jeu.deltaTempsFin - self.jeu.deltaTempsFin*sqrt(self.jeu.nbLignesSupprimees) / (sqrt(self.jeu.nbCoups) + self.jeu.deltaTempsMilieu)
+        self.deltaTemps = self.jeu.deltaTemps
 
     def tourner(self, grille, changement):
         self.orientation = (self.orientation + changement)%4

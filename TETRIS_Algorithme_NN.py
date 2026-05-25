@@ -406,7 +406,8 @@ class Algorithme(object):
 
     def changer_nb_coups(self, ajout):
         self.nbCoups = (self.nbCoups-1+ajout) % self.nbCoupsMax + 1
-        self.jeu.texteNbCoupsAlgo = self.jeu.police.render(f"NbCoups Algo : {self.nbCoups}", False, self.jeu.couleurTextes)
+        #self.jeu.changer_nb_coups(ajout)
+        self.jeu.texteNbCoupsAlgo = self.jeu.police.render(f"NbCoups Algo : {self.nbCoups}", False, self.jeu.menus.couleurTextes)
 
     def afficher_toutes_positions(self):
         if not self.visuelPositions:
